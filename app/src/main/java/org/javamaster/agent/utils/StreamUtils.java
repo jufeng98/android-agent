@@ -2,8 +2,6 @@ package org.javamaster.agent.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -23,15 +21,6 @@ public class StreamUtils {
     private static final int BUFFER_SIZE = 4096;
 
     private static final byte[] EMPTY_CONTENT = new byte[0];
-
-    public static String fileContent(String filePath) throws Exception {
-        if (!new File(filePath).exists()) {
-            return "";
-        }
-        try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
-            return copyToString(fileInputStream, Charset.defaultCharset());
-        }
-    }
 
     public static byte[] copyToByteArray(InputStream in) throws IOException {
         if (in == null) {

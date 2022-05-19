@@ -5,13 +5,13 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Environment
 import android.os.IBinder
 import android.os.SystemClock
 import android.widget.Toast
 import org.javamaster.agent.common.App
 import org.javamaster.agent.receiver.ScheduledReceiver
 import org.javamaster.agent.utils.RootCmd
-import org.javamaster.agent.utils.StreamUtils
 import java.lang.Exception
 
 /**
@@ -32,15 +32,16 @@ class AgentHostService : Service() {
         manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pi)
 
         try {
-            val content = StreamUtils.fileContent("/mnt/shell/emulated/0/Pictures/hosts.txt")
-//            val content = StreamUtils.fileContent("/mnt/shared/Sharefolder/hosts.txt")
+            val content = RootCmd.exusecmd(
+                "cat " + Environment.getExternalStorageDirectory().path + "/Pictures/hosts.txt"
+            )
             if (hostsContent != content) {
                 RootCmd.modifyHosts(content)
                 hostsContent = content
                 Toast.makeText(App.context, "hosts文件已成功修改", Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
-            e.printStackTrace();
+            Toast.makeText(App.context, "修改hosts出错了:" + e.message, Toast.LENGTH_SHORT).show()
         }
 
         return super.onStartCommand(receiverIntent, flags, startId)
@@ -48,13 +49,14 @@ class AgentHostService : Service() {
 
     companion object {
 
-        var hostsContent: String = StreamUtils.fileContent("/system/etc/hosts")
+        lateinit var hostsContent: String
 
         @JvmStatic
         fun startService(context: Context) {
+            hostsContent = RootCmd.exusecmd("cat /system/etc/hosts")
             val intent = Intent(context, AgentHostService::class.java)
             context.startService(intent)
-            Toast.makeText(App.context, "修改hosts服务已启动", Toast.LENGTH_LONG).show()
+            Toast.makeText(App.context, "修改hosts服务已启动", Toast.LENGTH_SHORT).show()
         }
 
     }

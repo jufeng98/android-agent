@@ -5,6 +5,8 @@ import org.javamaster.agent.common.App;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author yudong
@@ -49,9 +51,10 @@ public class RootCmd {
         exusecmd("rm -rf " + filePath);
     }
 
-    public static void exusecmd(String command) throws Exception {
+    public static String exusecmd(String command) throws Exception {
         Process process = null;
         DataOutputStream os = null;
+        InputStream is = null;
         try {
             process = Runtime.getRuntime().exec("su");
             os = new DataOutputStream(process.getOutputStream());
@@ -59,9 +62,16 @@ public class RootCmd {
             os.writeBytes("exit\n");
             os.flush();
             process.waitFor();
-        } finally {
+            is = process.getInputStream();
+            return StreamUtils.copyToString(is, StandardCharsets.UTF_8);
+        }catch (Exception e){
+            return "error:" + e.getMessage();
+        }finally {
             if (os != null) {
                 os.close();
+            }
+            if (is != null) {
+                is.close();
             }
             if (process != null) {
                 process.destroy();
